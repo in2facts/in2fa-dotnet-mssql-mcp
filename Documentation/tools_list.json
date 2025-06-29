@@ -1,0 +1,379 @@
+{
+  "result": {
+    "tools": [
+      {
+        "name": "TestConnection",
+        "description": "Test a database connection.",
+        "inputSchema": {
+          "title": "TestConnection",
+          "description": "Test a database connection.",
+          "type": "object",
+          "properties": {
+            "request": {
+              "type": "object",
+              "properties": { "connectionString": { "type": "string" } },
+              "additionalProperties": false
+            }
+          },
+          "required": ["request"]
+        }
+      },
+      {
+        "name": "RotateKey",
+        "description": "Rotate encryption key for connection strings",
+        "inputSchema": {
+          "title": "RotateKey",
+          "description": "Rotate encryption key for connection strings",
+          "type": "object",
+          "properties": { "newKey": { "type": "string" } },
+          "required": ["newKey"]
+        }
+      },
+      {
+        "name": "GetTableMetadata",
+        "description": "Gets detailed metadata about the database tables, columns, primary keys and foreign keys.",
+        "inputSchema": {
+          "title": "GetTableMetadata",
+          "description": "Gets detailed metadata about the database tables, columns, primary keys and foreign keys.",
+          "type": "object",
+          "properties": {
+            "connectionName": {
+              "type": "string",
+              "default": "DefaultConnection"
+            },
+            "schema": { "type": "string", "default": null }
+          }
+        }
+      },
+      {
+        "name": "GetSqlServerAgentJobDetails",
+        "description": "Gets detailed information (steps, schedules, history) for a specific SQL Server Agent job.",
+        "inputSchema": {
+          "title": "GetSqlServerAgentJobDetails",
+          "description": "Gets detailed information (steps, schedules, history) for a specific SQL Server Agent job.",
+          "type": "object",
+          "properties": {
+            "jobName": { "type": "string" },
+            "connectionName": {
+              "type": "string",
+              "default": "DefaultConnection"
+            }
+          },
+          "required": ["jobName"]
+        }
+      },
+      {
+        "name": "ListConnections",
+        "description": "List all available database connections.",
+        "inputSchema": {
+          "title": "ListConnections",
+          "description": "List all available database connections.",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "GetApiKeyUsageLogs",
+        "description": "Get recent usage logs for a specific API key (admin only)",
+        "inputSchema": {
+          "title": "GetApiKeyUsageLogs",
+          "description": "Get recent usage logs for a specific API key (admin only)",
+          "type": "object",
+          "properties": {
+            "apiKeyId": { "type": "string" },
+            "limit": { "type": "integer", "default": 100 }
+          },
+          "required": ["apiKeyId"]
+        }
+      },
+      {
+        "name": "Initialize",
+        "description": "Initialize the SQL Server connection.",
+        "inputSchema": {
+          "title": "Initialize",
+          "description": "Initialize the SQL Server connection.",
+          "type": "object",
+          "properties": {
+            "connectionName": {
+              "type": "string",
+              "default": "DefaultConnection"
+            }
+          }
+        }
+      },
+      {
+        "name": "GetUserUsageLogs",
+        "description": "Get recent usage logs for a user (admin only)",
+        "inputSchema": {
+          "title": "GetUserUsageLogs",
+          "description": "Get recent usage logs for a user (admin only)",
+          "type": "object",
+          "properties": {
+            "userId": { "type": "string" },
+            "limit": { "type": "integer", "default": 100 }
+          },
+          "required": ["userId"]
+        }
+      },
+      {
+        "name": "RemoveConnection",
+        "description": "Remove a database connection.",
+        "inputSchema": {
+          "title": "RemoveConnection",
+          "description": "Remove a database connection.",
+          "type": "object",
+          "properties": {
+            "request": {
+              "type": "object",
+              "properties": { "name": { "type": "string" } },
+              "additionalProperties": false
+            }
+          },
+          "required": ["request"]
+        }
+      },
+      {
+        "name": "GetDatabaseObjectsByType",
+        "description": "Gets detailed metadata about specific database object types.",
+        "inputSchema": {
+          "title": "GetDatabaseObjectsByType",
+          "description": "Gets detailed metadata about specific database object types.",
+          "type": "object",
+          "properties": {
+            "connectionName": {
+              "type": "string",
+              "default": "DefaultConnection"
+            },
+            "schema": { "type": "string", "default": null },
+            "objectType": { "type": "string", "default": "ALL" }
+          }
+        }
+      },
+      {
+        "name": "RevokeApiKey",
+        "description": "Revoke an API key",
+        "inputSchema": {
+          "title": "RevokeApiKey",
+          "description": "Revoke an API key",
+          "type": "object",
+          "properties": {
+            "request": {
+              "type": "object",
+              "properties": { "id": { "type": "string" } },
+              "additionalProperties": false
+            }
+          },
+          "required": ["request"]
+        }
+      },
+      {
+        "name": "ListApiKeys",
+        "description": "List API keys for a user",
+        "inputSchema": {
+          "title": "ListApiKeys",
+          "description": "List API keys for a user",
+          "type": "object",
+          "properties": { "userId": { "type": "string" } },
+          "required": ["userId"]
+        }
+      },
+      {
+        "name": "GenerateSecureKey",
+        "description": "Generate a secure random key for connection string encryption",
+        "inputSchema": {
+          "title": "GenerateSecureKey",
+          "description": "Generate a secure random key for connection string encryption",
+          "type": "object",
+          "properties": { "length": { "type": "integer", "default": 32 } }
+        }
+      },
+      {
+        "name": "CreateApiKey",
+        "description": "Create a new API key for a user",
+        "inputSchema": {
+          "title": "CreateApiKey",
+          "description": "Create a new API key for a user",
+          "type": "object",
+          "properties": {
+            "request": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "userId": { "type": "string" },
+                "keyType": { "type": "string" },
+                "expirationDate": { "type": ["string", "null"] }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["request"]
+        }
+      },
+      {
+        "name": "GetDatabaseObjectsMetadata",
+        "description": "Gets detailed metadata about database objects including tables and views.",
+        "inputSchema": {
+          "title": "GetDatabaseObjectsMetadata",
+          "description": "Gets detailed metadata about database objects including tables and views.",
+          "type": "object",
+          "properties": {
+            "connectionName": {
+              "type": "string",
+              "default": "DefaultConnection"
+            },
+            "schema": { "type": "string", "default": null },
+            "includeViews": { "type": "boolean", "default": true }
+          }
+        }
+      },
+      {
+        "name": "AddConnection",
+        "description": "Add a new database connection.",
+        "inputSchema": {
+          "title": "AddConnection",
+          "description": "Add a new database connection.",
+          "type": "object",
+          "properties": {
+            "request": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "connectionString": { "type": "string" },
+                "description": { "type": ["string", "null"] }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["request"]
+        }
+      },
+      {
+        "name": "GetSsisCatalogInfo",
+        "description": "Gets SSIS catalog information including Project Deployment and Package Deployment models.",
+        "inputSchema": {
+          "title": "GetSsisCatalogInfo",
+          "description": "Gets SSIS catalog information including Project Deployment and Package Deployment models.",
+          "type": "object",
+          "properties": {
+            "connectionName": {
+              "type": "string",
+              "default": "DefaultConnection"
+            }
+          }
+        }
+      },
+      {
+        "name": "UpdateConnection",
+        "description": "Update an existing database connection.",
+        "inputSchema": {
+          "title": "UpdateConnection",
+          "description": "Update an existing database connection.",
+          "type": "object",
+          "properties": {
+            "request": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "connectionString": { "type": "string" },
+                "description": { "type": ["string", "null"] }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["request"]
+        }
+      },
+      {
+        "name": "MigrateConnectionsToEncrypted",
+        "description": "Migrate unencrypted connection strings to encrypted format",
+        "inputSchema": {
+          "title": "MigrateConnectionsToEncrypted",
+          "description": "Migrate unencrypted connection strings to encrypted format",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "GetAzureDevOpsInfo",
+        "description": "Gets Azure DevOps information including projects, repositories, builds, and work items.",
+        "inputSchema": {
+          "title": "GetAzureDevOpsInfo",
+          "description": "Gets Azure DevOps information including projects, repositories, builds, and work items.",
+          "type": "object",
+          "properties": {
+            "connectionName": {
+              "type": "string",
+              "default": "DefaultConnection"
+            }
+          }
+        }
+      },
+      {
+        "name": "ListUserApiKeys",
+        "description": "List API keys for a user",
+        "inputSchema": {
+          "title": "ListUserApiKeys",
+          "description": "List API keys for a user",
+          "type": "object",
+          "properties": { "userId": { "type": "string" } },
+          "required": ["userId"]
+        }
+      },
+      {
+        "name": "ListAllApiKeys",
+        "description": "List all API keys (admin only)",
+        "inputSchema": {
+          "title": "ListAllApiKeys",
+          "description": "List all API keys (admin only)",
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "ExecuteQuery",
+        "description": "Executes a SQL query and returns the results as JSON.",
+        "inputSchema": {
+          "title": "ExecuteQuery",
+          "description": "Executes a SQL query and returns the results as JSON.",
+          "type": "object",
+          "properties": {
+            "query": { "type": "string" },
+            "connectionName": {
+              "type": "string",
+              "default": "DefaultConnection"
+            }
+          },
+          "required": ["query"]
+        }
+      },
+      {
+        "name": "GetSqlServerAgentJobs",
+        "description": "Gets SQL Server Agent job metadata (jobs, status, owner, etc.) from msdb.",
+        "inputSchema": {
+          "title": "GetSqlServerAgentJobs",
+          "description": "Gets SQL Server Agent job metadata (jobs, status, owner, etc.) from msdb.",
+          "type": "object",
+          "properties": {
+            "connectionName": {
+              "type": "string",
+              "default": "DefaultConnection"
+            }
+          }
+        }
+      },
+      {
+        "name": "DeleteApiKey",
+        "description": "Delete an API key",
+        "inputSchema": {
+          "title": "DeleteApiKey",
+          "description": "Delete an API key",
+          "type": "object",
+          "properties": { "id": { "type": "string" } },
+          "required": ["id"]
+        }
+      }
+    ]
+  },
+  "id": 1,
+  "jsonrpc": "2.0"
+}
