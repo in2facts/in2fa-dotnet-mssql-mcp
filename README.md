@@ -11,8 +11,10 @@ Features include:
 - SQL query execution
 - Database metadata retrieval (tables, views, stored procedures, functions)
 - Detailed schema information including primary/foreign keys
+- Multi-key API authentication system with master and user-specific keys
 - Connection string encryption with AES-256
 - Key rotation and security management
+- API key usage tracking and analytics
 - Async/await for all database operations
 - Robust logging with Serilog
 - Clean architecture with separation of concerns
@@ -29,12 +31,13 @@ This server provides three types of MCP endpoints:
 
 1. **Standard MCP Endpoints**: Accessible via the ModelContextProtocol.AspNetCore library
 2. **JSON-RPC 2.0 Endpoints**: Following the MCP JSON-RPC 2.0 protocol
-   - `POST /api/jsonrpc`: Handles `tools/list` and `tools/call` methods
+   - `POST /mcp`: Handles `tools/list` and `tools/call` methods
 3. **Direct REST API Endpoints**: For simpler HTTP access to specific database operations
 
 See the following documentation:
 
 - [MCP JSON-RPC Documentation](./Documentation/McpJsonRpc.md) for details on the JSON-RPC endpoints
+- [Multi-Key Authentication System](./Documentation/MultiKeyAuthentication.md) for details on the authentication system
 - [Using MCP with C#](./Documentation/UsingMcpWithCSharp.md) for C# client examples
 - [Testing MCP JSON-RPC Endpoints with PowerShell](./Documentation/McpJsonRpcPowershellTesting.md) for comprehensive PowerShell testing
 
@@ -50,7 +53,7 @@ Set mandatory variables prior to starting MCP Server.
 | Variable Name | Mandatory | Default Value | Recommended Values (Expected Format/Type) | Description |
 | :-----------------------------------| :------------------------| :--------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | `MSSQL_MCP_KEY` | Yes | The `Start-MCP-Encrypted.ps1` will generate a secure random key if this variable is unset. To generate a secure encryption key you can use `Generate-MCP-Key.ps1`, to change the current key use `Rotate-Encryption-Key.ps1` | A strong, cryptographically secure random string (e.g., 32 bytes, Base64 encoded). | The master encryption key used for AES-256 encryption of connection strings stored in the `connections.db` SQLite database. |
-| `MSSQL_MCP_API_KEY` | Yes | This is the Authorization Bearer token. None explicitly mentioned for the environment variable itself. If not set, API key authentication might be disabled or fall back to appsettings.json if configured there. The `Set-Api-Key.ps1` script generates one. | A strong, cryptographically secure random string. | The API key required for client applications to authenticate with the MCP server when API key authentication is enabled via HTTP headers. |
+| `MSSQL_MCP_API_KEY` | Yes | This is the master API key (Authorization Bearer token). If not set, API key authentication might be disabled or fall back to appsettings.json if configured there. The `Set-Api-Key.ps1` script generates one. | A strong, cryptographically secure random string. | The master API key required for administrative access to the MCP server and for creating additional user API keys. User API keys are stored in the SQLite database and managed through the API. |
 | `MSSQL_MCP_DATA` | No | Data (A Data subdirectory in the application's root directory) | A valid file system path to a directory. | Overrides the default directory location for storing application data, most notably the `connections.db` SQLite database file. |
 
 ### TL;DR The Quick Setup Doc
@@ -88,11 +91,14 @@ See the [full architecural documentation](./Documentation/Architecture.md) for d
 - **DatabaseMetadataProvider**: Service for retrieving database schema information
 - **ConnectionStringProvider**: Service for managing database connection strings
 - **ConnectionManager**: Manages connection storage and retrieval
+- **ApiKeyManager**: Manages API key lifecycle and validation
+- **ApiKeyRepository**: Stores and retrieves encrypted API keys
 - **SqlServerTools**: MCP tools implementation for SQL Server operations
 - **ConnectionManagerTool**: MCP tool for managing connections
 - **SecurityTool**: MCP tool for security operations (encryption, key rotation, etc.)
+- **ApiKeyManagementTool**: MCP tool for managing API keys
 - **ServiceCollectionExtensions**: Extension methods for registering services with dependency injection
-- **ApiKeyAuthMiddleware**: Middleware for API key authentication
+- **ApiKeyAuthMiddleware**: Middleware for multi-key API authentication
 - SQL Server instance (local or remote)
 - Visual Studio Code with Copilot extension
 
@@ -182,55 +188,6 @@ This script automatically generates a cryptographically secure random key using 
 ```
 
 For production environments, you should store the key securely and set the environment variable externally using a secrets management solution.
-
-#### Managing Connections through MCP
-
-Use the following MCP commands to manage connections:
-
-- **List connections**:
-
-  ```
-  connectionManager/list
-  ```
-
-- **Add a connection**:
-
-  ```
-  connectionManager/add
-  Params: {
-    "Name": "MyConnection",
-    "ConnectionString": "Server=myserver;Database=mydb;Trusted_Connection=True;",
-    "Description": "Optional description"
-  }
-  ```
-
-- **Update a connection**:
-
-  ```
-  connectionManager/update
-  Params: {
-    "Name": "MyConnection",
-    "ConnectionString": "Updated connection string",
-    "Description": "Updated description"
-  }
-  ```
-
-- **Remove a connection**:
-
-  ```
-  connectionManager/remove
-  Params: {
-    "Name": "MyConnection"
-  }
-  ```
-
-- **Test a connection string**:
-  ```
-  connectionManager/test
-  Params: {
-    "ConnectionString": "Server=myserver;Database=mydb;Trusted_Connection=True;"
-  }
-  ```
 
 #### Testing Connection Management
 
@@ -945,13 +902,24 @@ For detailed security information, see the [Security Documentation](./Documentat
 
 ## API Security
 
-### API Key Authentication
+### Multi-Key API Authentication System
 
-The MCP server now supports API key authentication to secure the API endpoint. When enabled, all requests must include a valid API key in the HTTP headers.
+The MCP server implements a robust multi-key API authentication system to secure API endpoints. This system supports both a master API key for administrative access and multiple user-specific API keys for regular access.
+
+#### Key Authentication Features
+
+- Master API key for administrative access to all endpoints
+- User-specific API keys with optional expiration dates
+- API key usage tracking and analytics
+- API key revocation capabilities
+- Encrypted storage of API keys in SQLite database
+- Multiple key types (user, service, admin)
+
+For detailed information about the multi-key authentication system, see [MultiKeyAuthentication.md](./Documentation/MultiKeyAuthentication.md).
 
 #### Setting Up API Key Authentication
 
-1. Generate and set an API key using the provided script:
+1. Generate and set a master API key using the provided script:
 
 ```powershell
 ./Scripts/Set-Api-Key.ps1
@@ -963,27 +931,51 @@ This script will:
 - Set it as the environment variable `MSSQL_MCP_API_KEY` for the current session
 - Display usage examples for making authenticated API calls
 
+2. Additional user-specific API keys can be created using the CreateApiKey endpoint:
+
+```powershell
+# PowerShell example to create a new user API key
+Invoke-RestMethod -Uri "http://localhost:3001/mcp" -Method Post `
+  -Headers @{"Authorization" = "Bearer your-master-api-key"; "Content-Type" = "application/json"} `
+  -Body '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "CreateApiKey",
+      "arguments": {
+        "name": "User API Key",
+        "userId": "user123",
+        "keyType": "user",
+        "expirationDate": "2026-06-29T00:00:00Z"
+      }
+    }
+  }'
+```
+
 #### API Key Configuration
 
-The API key can be configured in different ways:
+The master API key can be configured in different ways:
 
 1. **Environment Variable**: Set `MSSQL_MCP_API_KEY` environment variable
 
    ```powershell
-   $env:MSSQL_MCP_API_KEY = "your-secure-api-key"
+   $env:MSSQL_MCP_API_KEY = "your-secure-master-api-key"
    ```
 
 2. **Application Settings**: Configure in `appsettings.json` under the ApiSecurity section:
    ```json
    "ApiSecurity": {
      "HeaderName": "X-API-Key",
-     "ApiKey": "your-secure-api-key"
+     "ApiKey": "your-secure-master-api-key"
    }
    ```
 
+User-specific API keys are managed through the API endpoints and stored securely in the SQLite database.
+
 #### Making Authenticated Requests
 
-When API key authentication is enabled, all HTTP requests to the server must include the API key as a Bearer token in the Authorization header:
+When API key authentication is enabled, all HTTP requests to the server must include either the master API key or a valid user API key as a Bearer token in the Authorization header:
 
 ```powershell
 # PowerShell example
@@ -996,9 +988,133 @@ curl -X POST http://localhost:3001/ -H "Authorization: Bearer your-api-key" -H "
   -d '{"jsonrpc": "2.0", "id": 1, "method": "#TestConnection", "params": {"ConnectionName": "My_DBCONNECTION_Name"}}'
 ```
 
+#### API Key Management
+
+The MCP server provides endpoints for managing API keys:
+
+1. **CreateApiKey**: Create a new API key for a specific user
+
+   ```json
+   {
+     "jsonrpc": "2.0",
+     "id": 1,
+     "method": "tools/call",
+     "params": {
+       "name": "CreateApiKey",
+       "arguments": {
+         "name": "My Test API Key",
+         "userId": "SomeUserId",
+         "keyType": "user",
+         "expirationDate": "2026-06-29T00:00:00Z"
+       }
+     }
+   }
+   ```
+
+2. **ListUserApiKeys**: List all API keys for a specific user
+
+   ```json
+   {
+     "jsonrpc": "2.0",
+     "id": 1,
+     "method": "tools/call",
+     "params": {
+       "name": "ListUserApiKeys",
+       "arguments": {
+         "userId": "SomeUserId"
+       }
+     }
+   }
+   ```
+
+3. **ListAllApiKeys**: List all API keys in the system (admin only)
+
+   ```json
+   {
+     "jsonrpc": "2.0",
+     "id": 1,
+     "method": "tools/call",
+     "params": {
+       "name": "ListAllApiKeys",
+       "arguments": {}
+     }
+   }
+   ```
+
+4. **RevokeApiKey**: Revoke an API key (mark as inactive)
+
+   ```json
+   {
+     "jsonrpc": "2.0",
+     "id": 1,
+     "method": "tools/call",
+     "params": {
+       "name": "RevokeApiKey",
+       "arguments": {
+         "request": {
+           "id": "key-id-to-revoke"
+         }
+       }
+     }
+   }
+   ```
+
+5. **DeleteApiKey**: Permanently delete an API key
+
+   ```json
+   {
+     "jsonrpc": "2.0",
+     "id": 1,
+     "method": "tools/call",
+     "params": {
+       "name": "DeleteApiKey",
+       "arguments": {
+         "id": "key-id-to-delete"
+       }
+     }
+   }
+   ```
+
+6. **GetApiKeyUsageLogs**: Get usage logs for a specific API key
+
+   ```json
+   {
+     "jsonrpc": "2.0",
+     "id": 1,
+     "method": "tools/call",
+     "params": {
+       "name": "GetApiKeyUsageLogs",
+       "arguments": {
+         "apiKeyId": "target-key-id",
+         "limit": 100
+       }
+     }
+   }
+   ```
+
+7. **GetUserUsageLogs**: Get API usage logs for a specific user
+   ```json
+   {
+     "jsonrpc": "2.0",
+     "id": 1,
+     "method": "tools/call",
+     "params": {
+       "name": "GetUserUsageLogs",
+       "arguments": {
+         "userId": "target-user-id",
+         "limit": 100
+       }
+     }
+   }
+   ```
+
 #### Security Considerations
 
-- Store the API key securely and do not expose it in client-side code
+- Store API keys securely and never expose them in client-side code
+- Use the master API key only for administrative tasks
+- Create user-specific API keys with appropriate expiration dates for regular access
 - Rotate API keys periodically for enhanced security
+- Monitor API usage logs for suspicious activity
+- Revoke compromised API keys immediately
 - Use HTTPS in production environments when exposing the API
-- For high-security environments, consider implementing additional authentication methods
+- Consider implementing additional security measures for high-security environments
