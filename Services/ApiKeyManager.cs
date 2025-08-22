@@ -91,7 +91,10 @@ public class ApiKeyManager : IApiKeyManager
             LastUsed = null,
             IsActive = savedKey.IsActive,
             KeyType = savedKey.KeyType,
-            Description = savedKey.Description
+            Description = savedKey.Description,
+            AllowedConnectionNames = string.IsNullOrEmpty(apiKey.AllowedConnectionNames)
+                ? null
+                : JsonSerializer.Deserialize<List<string>>(apiKey.AllowedConnectionNames)
         };
     }
 
@@ -113,7 +116,10 @@ public class ApiKeyManager : IApiKeyManager
                 LastUsed = apiKey.LastUsed,
                 IsActive = apiKey.IsActive,
                 KeyType = apiKey.KeyType,
-                Description = apiKey.Description
+                Description = apiKey.Description,
+                AllowedConnectionNames = string.IsNullOrEmpty(apiKey.AllowedConnectionNames)
+                    ? null
+                    : JsonSerializer.Deserialize<List<string>>(apiKey.AllowedConnectionNames)
             });
         }
 
@@ -138,7 +144,10 @@ public class ApiKeyManager : IApiKeyManager
                 LastUsed = apiKey.LastUsed,
                 IsActive = apiKey.IsActive,
                 KeyType = apiKey.KeyType,
-                Description = apiKey.Description
+                Description = apiKey.Description,
+                AllowedConnectionNames = string.IsNullOrEmpty(apiKey.AllowedConnectionNames)
+                    ? null
+                    : JsonSerializer.Deserialize<List<string>>(apiKey.AllowedConnectionNames)
             });
         }
 
@@ -209,7 +218,10 @@ public class ApiKeyManager : IApiKeyManager
             LastUsed = apiKey.LastUsed,
             IsActive = apiKey.IsActive,
             KeyType = apiKey.KeyType,
-            Description = apiKey.Description
+            Description = apiKey.Description,
+            AllowedConnectionNames = string.IsNullOrEmpty(apiKey.AllowedConnectionNames)
+                ? null
+                : JsonSerializer.Deserialize<List<string>>(apiKey.AllowedConnectionNames)
         };
     }
 

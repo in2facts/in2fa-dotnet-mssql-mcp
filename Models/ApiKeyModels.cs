@@ -174,6 +174,11 @@ public class ApiKeyResponse
     /// Optional description
     /// </summary>
     public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Optional list of connection names that this key is allowed to access.
+    /// </summary>
+    public List<string>? AllowedConnectionNames { get; set; }
 }
 
 /// <summary>
