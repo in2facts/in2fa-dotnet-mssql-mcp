@@ -19,9 +19,6 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          token: ${{ secrets.SUBMODULES_PAT_TOKEN }}
 
       - uses: actions/setup-dotnet@v4
         with:
