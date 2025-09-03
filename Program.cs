@@ -10,8 +10,11 @@ using mssqlMCP.Services;
 using mssqlMCP.Tools;
 using Serilog;
 using System.ComponentModel;
+using mssqlMCP;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.TryAddJsonFromAzureKeyVault(builder.Environment.IsDevelopment());
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
