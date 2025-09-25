@@ -176,10 +176,12 @@ public class ApiKeyAuthMiddleware
             }
 
             var json = JObject.Parse(requestBody);
-            var connectionName = json["params"]?["connectionName"]?.ToString() ?? json["params"]?["arguments"]?["connectionName"]?.ToString();
+            var connectionName = json.GetCaseInsensitive("params", "connectionName")?.ToString() ??
+                                 json.GetCaseInsensitive("params", "arguments", "connectionName")?.ToString();
 
+            if (!string.IsNullOrWhiteSpace(connectionName))
             {
-                if (connectionName != null && allowedConnections.Contains(connectionName, StringComparer.OrdinalIgnoreCase))
+                if (allowedConnections.Contains(connectionName, StringComparer.OrdinalIgnoreCase))
                 {
                     _logger.LogInformation("Connection '{ConnectionName}' is allowed for API key '{ApiKeyName}'", connectionName, apiKey.Name);
                     return true;
