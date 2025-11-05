@@ -2,6 +2,18 @@
 
 This is a Model Context Protocol (MCP) server that connects to one or more SQL Server databases; designed to be used by Visual Studio Code as a Copilot Agent.
 
+## 🚨 Recent Security Updates (November 2025)
+
+**Important**: This project has received significant security enhancements in November 2025. Please review the [Security Update Documentation](./Documentation/MERGE_UPDATE_NOVEMBER_2025.md) for:
+
+- Enhanced multi-tier API key authentication system
+- Role-based access control (master, admin, user keys)
+- Connection-level security restrictions
+- Encrypted API key storage
+- Comprehensive test coverage for security features
+
+**Migration Required**: Existing installations must configure authentication. See the [Migration Guide](./Documentation/MERGE_UPDATE_NOVEMBER_2025.md#migration-guide) for details.
+
 ## Overview
 
 This project implements an MCP server for SQL Server database connectivity, enabling VS Code and Copilot to interact with SQL databases via the Model Context Protocol.
@@ -205,10 +217,10 @@ This MCP server provides comprehensive metadata retrieval functionality for SQL 
 
 ### Table Metadata
 
-You can retrieve detailed information about database tables using the `GetTableMetadata` tool:
+You can retrieve detailed information about database tables using the `mssql_get_table_metadata` tool:
 
 ```
-#GetTableMetadata connectionName="YourConnection" schema="dbo"
+#mssql_get_table_metadata connectionName="YourConnection" schema="dbo"
 ```
 
 This provides complete table metadata including:
@@ -222,20 +234,20 @@ This provides complete table metadata including:
 
 As of May 2025, the MCP server now supports retrieving metadata from SQL Server views in addition to tables. This allows Copilot to understand the structure of views and use them in queries.
 
-You can retrieve metadata for both tables and views using the new `GetDatabaseObjectsMetadata` tool:
+You can retrieve metadata for both tables and views using the new `mssql_get_database_objects_metadata` tool:
 
 ```
-#GetDatabaseObjectsMetadata connectionName="YourConnection" schema="dbo" includeViews=true
+#mssql_get_database_objects_metadata connectionName="YourConnection" schema="dbo" includeViews=true
 ```
 
 ### Stored Procedure Metadata (New!)
 
 The MCP server now also supports retrieving metadata from SQL Server stored procedures, including procedure definitions and parameters. This allows Copilot to understand and work with stored procedures in your database.
 
-You can retrieve stored procedure metadata using the `GetDatabaseObjectsMetadata` tool with the `objectType` parameter:
+You can retrieve stored procedure metadata using the `mssql_get_database_objects_metadata` tool with the `objectType` parameter:
 
 ```
-#GetDatabaseObjectsMetadata connectionName="YourConnection" objectType=PROCEDURE
+#mssql_get_database_objects_metadata connectionName="YourConnection" objectType=PROCEDURE
 ```
 
 This provides detailed procedure metadata including:
@@ -250,29 +262,29 @@ You can filter database objects by type using the `objectType` parameter:
 
 ```
 # Get only tables
-#GetDatabaseObjectsMetadata connectionName="YourConnection" objectType=TABLE
+#mssql_get_database_objects_metadata connectionName="YourConnection" objectType=TABLE
 
 # Get only views
-#GetDatabaseObjectsMetadata connectionName="YourConnection" objectType=VIEW
+#mssql_get_database_objects_metadata connectionName="YourConnection" objectType=VIEW
 
 # Get only stored procedures
-#GetDatabaseObjectsMetadata connectionName="YourConnection" objectType=PROCEDURE
+#mssql_get_database_objects_metadata connectionName="YourConnection" objectType=PROCEDURE
 
 # Get all database objects
-#GetDatabaseObjectsMetadata connectionName="YourConnection" objectType=ALL
+#mssql_get_database_objects_metadata connectionName="YourConnection" objectType=ALL
 ```
 
 You can also filter by schema:
 
 ```
 # Get objects from a specific schema
-#GetDatabaseObjectsMetadata connectionName="YourConnection" schema="dbo" objectType=ALL
+#mssql_get_database_objects_metadata connectionName="YourConnection" schema="dbo" objectType=ALL
 ```
 
 You can also filter by specific object types using the objectType parameter:
 
 ```
-#GetDatabaseObjectsMetadata connectionName="YourConnection" schema="dbo" objectType="VIEW"
+#mssql_get_database_objects_metadata connectionName="YourConnection" schema="dbo" objectType="VIEW"
 ```
 
 Valid objectType values are:
@@ -288,7 +300,7 @@ The view metadata includes:
 - SQL definition of the view
 - Relationships to base tables (where applicable)
 
-By setting `includeViews=false`, you can retrieve only table metadata, similar to the original `GetTableMetadata` tool.
+By setting `includeViews=false`, you can retrieve only table metadata, similar to the original `mssql_get_table_metadata` tool.
 
 ### Example Usage
 
@@ -299,7 +311,7 @@ User: Show me all the database objects in my AdventureWorks2022 database, includ
 
 Copilot: I'll retrieve the metadata for all database objects in the AdventureWorks2022 database, including both tables and views.
 
-[Tool used: GetDatabaseObjectsMetadata with connectionName="AdventureWorks2022" includeViews=true]
+[Tool used: mssql_get_database_objects_metadata with connectionName="AdventureWorks2022" includeViews=true]
 
 Results:
 The AdventureWorks2022 database contains 68 tables and 20 views across multiple schemas:
@@ -361,11 +373,15 @@ For detailed instructions, see the [Copilot Agent Guide](./CopilotAgent.md).
 
 The following MCP tools are available for Copilot:
 
-1. **initialize**: Set up the database connection
-2. **executeQuery**: Run SQL queries against your database
-3. **getTableMetadata**: Get metadata about database tables
-4. **getDatabaseObjectsMetadata**: Get metadata about tables, views, and stored procedures
-5. **connectionManager/...**: Manage database connections
+1. **mssql_initialize_connection**: Set up the database connection
+2. **mssql_execute_query**: Run SQL queries against your database
+3. **mssql_get_table_metadata**: Get metadata about database tables
+4. **mssql_get_database_objects_metadata**: Get metadata about tables, views, and stored procedures
+5. **mssql_list_connections**: Manage database connections
+6. **mssql_add_connection**: Add new database connections
+7. **mssql_update_connection**: Update existing connections
+8. **mssql_remove_connection**: Remove connections
+9. **mssql_test_connection**: Test connection strings
 
 See the [full documentation](./Documentation/EXAMPLE_USAGE.md) for examples and detailed usage information.
 
@@ -378,7 +394,7 @@ User: Show me the relationships between tables in the Sales schema
 
 Copilot: I'll get the foreign key relationships in the Sales schema for you.
 
-[Tool used: GetTableMetadata with connectionName="AdventureWorks2022", schema="Sales"]
+[Tool used: mssql_get_table_metadata with connectionName="AdventureWorks2022", schema="Sales"]
 
 Results:
 I found the following relationships in the Sales schema:
@@ -404,7 +420,7 @@ User: Find the top 3 product categories by sales amount in the AdventureWorks202
 
 Copilot: I'll query the AdventureWorks2022 database to find the top product categories by sales.
 
-[Tool used: ExecuteQuery with connectionName="AdventureWorks2022"]
+[Tool used: mssql_execute_query with connectionName="AdventureWorks2022"]
 Query:
 SELECT TOP 3
     PC.Name AS CategoryName,
@@ -445,7 +461,7 @@ User: Get the sales summary for the top 3 sales territories in the most recent y
 
 Copilot: I'll retrieve the sales summary for the top territories from the AdventureWorks2022 database.
 
-[Tool used: ExecuteQuery with connectionName="AdventureWorks2022"]
+[Tool used: mssql_execute_query with connectionName="AdventureWorks2022"]
 Query:
 WITH RecentYear AS (
     SELECT MAX(YEAR(OrderDate)) AS MostRecentYear
@@ -501,10 +517,10 @@ These examples demonstrate how Copilot can help you explore relationships betwee
 
 ## Available Tools
 
-- `initialize`: Initializes the SQL Server connection
-- `executeQuery`: Executes a SQL query and returns results as JSON
-- `getTableMetadata`: Retrieves metadata about database tables, columns, keys, etc. You can filter by schema or get all schemas.
-- `getDatabaseObjectsMetadata`: Retrieves metadata about tables, views, stored procedures and functions, including schemas, columns, and relationships.
+- `mssql_initialize_connection`: Initializes the SQL Server connection
+- `mssql_execute_query`: Executes a SQL query and returns results as JSON
+- `mssql_get_table_metadata`: Retrieves metadata about database tables, columns, keys, etc. You can filter by schema or get all schemas.
+- `mssql_get_database_objects_metadata`: Retrieves metadata about tables, views, stored procedures and functions, including schemas, columns, and relationships.
 
 ### Copilot Tool Usage
 
@@ -512,13 +528,16 @@ When used with GitHub Copilot in Visual Studio Code, the tools are available as 
 
 ```javascript
 // Tool invocation pattern
-f1e_Initialize({ connectionName: "DefaultConnection" });
-f1e_ExecuteQuery({
+f1e_mssql_initialize_connection({ connectionName: "DefaultConnection" });
+f1e_mssql_execute_query({
   connectionName: "AdventureWorks2022",
   query: "SELECT TOP 5 * FROM Production.Product",
 });
-f1e_GetTableMetadata({ connectionName: "AdventureWorks2022", schema: "Sales" });
-f1e_GetDatabaseObjectsMetadata({
+f1e_mssql_get_table_metadata({
+  connectionName: "AdventureWorks2022",
+  schema: "Sales",
+});
+f1e_mssql_get_database_objects_metadata({
   connectionName: "AdventureWorks2022",
   schema: "Person",
   includeViews: true,
@@ -529,22 +548,22 @@ You'll typically interact with these tools by asking questions in natural langua
 
 ### Schema Filtering
 
-The `getTableMetadata` tool supports schema filtering, which allows you to retrieve metadata for tables in a specific schema:
+The `mssql_get_table_metadata` tool supports schema filtering, which allows you to retrieve metadata for tables in a specific schema:
 
 #### Usage Examples
 
 ```csharp
 // Get all database metadata (all schemas)
-var metadata = await GetTableMetadata();
+var metadata = await CallToolAsync("mssql_get_table_metadata", new { connectionName = "DefaultConnection" });
 
 // Get metadata for a specific connection (all schemas)
-var awMetadata = await GetTableMetadata("AdventureWorks");
+var awMetadata = await CallToolAsync("mssql_get_table_metadata", new { connectionName = "AdventureWorks" });
 
 // Get metadata for tables in a specific schema
-var dboSchemaMetadata = await GetTableMetadata("DefaultConnection", "dbo");
+var dboSchemaMetadata = await CallToolAsync("mssql_get_table_metadata", new { connectionName = "DefaultConnection", schema = "dbo" });
 
 // Get metadata for a specific schema in a specific database
-var awSalesSchema = await GetTableMetadata("AdventureWorks", "Sales");
+var awSalesSchema = await CallToolAsync("mssql_get_table_metadata", new { connectionName = "AdventureWorks", schema = "Sales" });
 ```
 
 This feature is particularly useful when working with large databases that have many schemas, allowing you to focus on just the relevant parts of the database structure.
@@ -555,40 +574,40 @@ This feature is particularly useful when working with large databases that have 
 
 ```csharp
 // Initialize the default connection
-var result = await Initialize();
+var result = await CallToolAsync("mssql_initialize_connection", new { connectionName = "DefaultConnection" });
 
 // Or specify a specific connection
-var adventureWorksResult = await Initialize("AdventureWorks");
+var adventureWorksResult = await CallToolAsync("mssql_initialize_connection", new { connectionName = "AdventureWorks" });
 ```
 
 ### Executing SQL Queries
 
 ```csharp
 // Basic SELECT query
-var users = await ExecuteQuery("SELECT TOP 10 * FROM Users");
+var users = await CallToolAsync("mssql_execute_query", new { query = "SELECT TOP 10 * FROM Users", connectionName = "DefaultConnection" });
 
 // Query with parameters (handle SQL injection carefully)
 var productQuery = "SELECT * FROM Products WHERE Category = 'Electronics' AND Price < 500";
-var products = await ExecuteQuery(productQuery);
+var products = await CallToolAsync("mssql_execute_query", new { query = productQuery, connectionName = "DefaultConnection" });
 
 // Query with specific connection
-var salesData = await ExecuteQuery("SELECT * FROM Sales.SalesOrderHeader", "AdventureWorks");
+var salesData = await CallToolAsync("mssql_execute_query", new { query = "SELECT * FROM Sales.SalesOrderHeader", connectionName = "AdventureWorks" });
 ```
 
 ### Getting Database Metadata
 
 ```csharp
 // Get all database metadata (all schemas)
-var metadata = await GetTableMetadata();
+var metadata = await CallToolAsync("mssql_get_table_metadata", new { connectionName = "DefaultConnection" });
 
 // Get metadata for a specific connection (all schemas)
-var awMetadata = await GetTableMetadata("AdventureWorks");
+var awMetadata = await CallToolAsync("mssql_get_table_metadata", new { connectionName = "AdventureWorks" });
 
 // Get metadata for tables in a specific schema
-var dboSchemaMetadata = await GetTableMetadata("DefaultConnection", "dbo");
+var dboSchemaMetadata = await CallToolAsync("mssql_get_table_metadata", new { connectionName = "DefaultConnection", schema = "dbo" });
 
 // Get metadata for a specific schema in a specific database
-var awSalesSchema = await GetTableMetadata("AdventureWorks", "Sales");
+var awSalesSchema = await CallToolAsync("mssql_get_table_metadata", new { connectionName = "AdventureWorks", schema = "Sales" });
 ```
 
 ### Common SQL Query Examples
@@ -628,12 +647,12 @@ User: Show me all tables in the AdventureWorksLT database
 
 Copilot: I'll try to retrieve the metadata from the AdventureWorksLT database.
 
-[Tool used: GetTableMetadata with connectionName="AdventureWorksLT"]
+[Tool used: mssql_get_table_metadata with connectionName="AdventureWorksLT"]
 
 Error: Connection string 'AdventureWorksLT' was not found in the configuration.
 ```
 
-**Solution**: Make sure the connection string is properly defined via `#ListConnections`.
+**Solution**: Make sure the connection string is properly defined via `mssql_list_connections`.
 
 ### Query Syntax Errors
 
@@ -644,7 +663,7 @@ User: Run this query: SELECT FROM Production.Product WHERE ListPrice < 100
 
 Copilot: I'll execute this query for you.
 
-[Tool used: ExecuteQuery with connectionName="AdventureWorks2022"]
+[Tool used: mssql_execute_query with connectionName="AdventureWorks2022"]
 Query: SELECT FROM Production.Product WHERE ListPrice < 100
 
 Error: Incorrect syntax near the keyword 'FROM'.
@@ -661,7 +680,7 @@ User: Get tables from AdventureWorks database
 
 Copilot: I'll get the tables from the AdventureWorks database.
 
-[Tool used: GetTableMetadata with connectionName="AdventureWorks"]
+[Tool used: mssql_get_table_metadata with connectionName="AdventureWorks"]
 
 Error: Connection string 'AdventureWorks' was not found in the configuration.
 ```
@@ -677,17 +696,17 @@ User: Show me data from the Customers table
 
 Copilot: I'll query the Customers table for you.
 
-[Tool used: ExecuteQuery with connectionName="AdventureWorks2022"]
+[Tool used: mssql_execute_query with connectionName="AdventureWorks2022"]
 Query: SELECT TOP 10 * FROM Customers
 
 Error: Invalid object name 'Customers'.
 ```
 
-**Solution**: First use GetTableMetadata to see which tables are available, then query the correct table name with the proper schema prefix if needed, e.g., "Sales.Customer".
+**Solution**: First use mssql_get_table_metadata to see which tables are available, then query the correct table name with the proper schema prefix if needed, e.g., "Sales.Customer".
 
 ### Performance Tips
 
-- Be specific about which schema you're interested in when using GetTableMetadata
+- Be specific about which schema you're interested in when using mssql_get_table_metadata
 - Limit the number of rows returned in queries with TOP or LIMIT clauses
 - Consider adding WHERE clauses to filter data and improve query performance
 - For large databases, query only the columns you need instead of using SELECT \*
@@ -931,7 +950,7 @@ This script will:
 - Set it as the environment variable `MSSQL_MCP_API_KEY` for the current session
 - Display usage examples for making authenticated API calls
 
-2. Additional user-specific API keys can be created using the CreateApiKey endpoint:
+2. Additional user-specific API keys can be created using the mssql_create_key endpoint:
 
 ```powershell
 # PowerShell example to create a new user API key
@@ -942,7 +961,7 @@ Invoke-RestMethod -Uri "http://localhost:3001/mcp" -Method Post `
     "id": 1,
     "method": "tools/call",
     "params": {
-      "name": "CreateApiKey",
+      "name": "mssql_create_key",
       "arguments": {
         "name": "User API Key",
         "userId": "user123",
@@ -992,7 +1011,7 @@ curl -X POST http://localhost:3001/ -H "Authorization: Bearer your-api-key" -H "
 
 The MCP server provides endpoints for managing API keys:
 
-1. **CreateApiKey**: Create a new API key for a specific user
+1. **mssql_create_key**: Create a new API key for a specific user
 
    ```json
    {
@@ -1000,7 +1019,7 @@ The MCP server provides endpoints for managing API keys:
      "id": 1,
      "method": "tools/call",
      "params": {
-       "name": "CreateApiKey",
+       "name": "mssql_create_key",
        "arguments": {
          "name": "My Test API Key",
          "userId": "SomeUserId",
@@ -1011,7 +1030,7 @@ The MCP server provides endpoints for managing API keys:
    }
    ```
 
-2. **ListUserApiKeys**: List all API keys for a specific user
+2. **mssql_list_user_keys**: List all API keys for a specific user
 
    ```json
    {
@@ -1019,7 +1038,7 @@ The MCP server provides endpoints for managing API keys:
      "id": 1,
      "method": "tools/call",
      "params": {
-       "name": "ListUserApiKeys",
+       "name": "mssql_list_user_keys",
        "arguments": {
          "userId": "SomeUserId"
        }
@@ -1027,7 +1046,7 @@ The MCP server provides endpoints for managing API keys:
    }
    ```
 
-3. **ListAllApiKeys**: List all API keys in the system (admin only)
+3. **mssql_list_all_keys**: List all API keys in the system (admin only)
 
    ```json
    {
@@ -1035,13 +1054,13 @@ The MCP server provides endpoints for managing API keys:
      "id": 1,
      "method": "tools/call",
      "params": {
-       "name": "ListAllApiKeys",
+       "name": "mssql_list_all_keys",
        "arguments": {}
      }
    }
    ```
 
-4. **RevokeApiKey**: Revoke an API key (mark as inactive)
+4. **mssql_revoke_key**: Revoke an API key (mark as inactive)
 
    ```json
    {
@@ -1049,7 +1068,7 @@ The MCP server provides endpoints for managing API keys:
      "id": 1,
      "method": "tools/call",
      "params": {
-       "name": "RevokeApiKey",
+       "name": "mssql_revoke_key",
        "arguments": {
          "request": {
            "id": "key-id-to-revoke"
@@ -1059,7 +1078,7 @@ The MCP server provides endpoints for managing API keys:
    }
    ```
 
-5. **DeleteApiKey**: Permanently delete an API key
+5. **mssql_delete_key**: Permanently delete an API key
 
    ```json
    {
@@ -1067,7 +1086,7 @@ The MCP server provides endpoints for managing API keys:
      "id": 1,
      "method": "tools/call",
      "params": {
-       "name": "DeleteApiKey",
+       "name": "mssql_delete_key",
        "arguments": {
          "id": "key-id-to-delete"
        }
@@ -1075,7 +1094,7 @@ The MCP server provides endpoints for managing API keys:
    }
    ```
 
-6. **GetApiKeyUsageLogs**: Get usage logs for a specific API key
+6. **mssql_get_key_usage_logs**: Get usage logs for a specific API key
 
    ```json
    {
@@ -1083,7 +1102,7 @@ The MCP server provides endpoints for managing API keys:
      "id": 1,
      "method": "tools/call",
      "params": {
-       "name": "GetApiKeyUsageLogs",
+       "name": "mssql_get_key_usage_logs",
        "arguments": {
          "apiKeyId": "target-key-id",
          "limit": 100
@@ -1092,14 +1111,14 @@ The MCP server provides endpoints for managing API keys:
    }
    ```
 
-7. **GetUserUsageLogs**: Get API usage logs for a specific user
+7. **mssql_get_user_usage_logs**: Get API usage logs for a specific user
    ```json
    {
      "jsonrpc": "2.0",
      "id": 1,
      "method": "tools/call",
      "params": {
-       "name": "GetUserUsageLogs",
+       "name": "mssql_get_user_usage_logs",
        "arguments": {
          "userId": "target-user-id",
          "limit": 100

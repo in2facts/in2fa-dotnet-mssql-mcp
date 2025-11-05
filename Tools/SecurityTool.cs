@@ -31,7 +31,7 @@ public class SecurityTool
     }    /// <summary>
          /// Rotate the encryption key for all connection strings
          /// </summary>
-    [McpServerTool, Description("Rotate encryption key for connection strings")]
+    [McpServerTool(Name = "mssql_rotate_key"), Description("Rotate encryption key for connection strings")]
     public async Task<object> RotateKeyAsync(string newKey)
     {
         // Validate input parameters
@@ -65,7 +65,7 @@ public class SecurityTool
     }        /// <summary>
              /// Migrate unencrypted connection strings to encrypted format
              /// </summary>
-    [McpServerTool, Description("Migrate unencrypted connection strings to encrypted format")]
+    [McpServerTool(Name = "mssql_migrate_connections"), Description("Migrate unencrypted connection strings to encrypted format")]
     public async Task<object> MigrateConnectionsToEncryptedAsync()
     {
         _logger.LogInformation("Request to migrate unencrypted connections received");
@@ -90,7 +90,7 @@ public class SecurityTool
     }    /// <summary>
          /// Generate a secure random key for encryption
          /// </summary>
-    [McpServerTool, Description("Generate a secure random key for connection string encryption")]
+    [McpServerTool(Name = "mssql_generate_key"), Description("Generate a secure random key for connection string encryption")]
     public object GenerateSecureKey(int length = 32)
     {
         // Validate input parameters
