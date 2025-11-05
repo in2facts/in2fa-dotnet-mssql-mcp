@@ -2,6 +2,18 @@
 
 This is a Model Context Protocol (MCP) server that connects to one or more SQL Server databases; designed to be used by Visual Studio Code as a Copilot Agent.
 
+## 🚨 Recent Security Updates (November 2025)
+
+**Important**: This project has received significant security enhancements in November 2025. Please review the [Security Update Documentation](./Documentation/MERGE_UPDATE_NOVEMBER_2025.md) for:
+
+- Enhanced multi-tier API key authentication system
+- Role-based access control (master, admin, user keys)
+- Connection-level security restrictions
+- Encrypted API key storage
+- Comprehensive test coverage for security features
+
+**Migration Required**: Existing installations must configure authentication. See the [Migration Guide](./Documentation/MERGE_UPDATE_NOVEMBER_2025.md#migration-guide) for details.
+
 ## Overview
 
 This project implements an MCP server for SQL Server database connectivity, enabling VS Code and Copilot to interact with SQL databases via the Model Context Protocol.

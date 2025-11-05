@@ -1,5 +1,158 @@
 # mssqlMCP Release Notes
 
+## Version 2.1.0 - Security Enhancement Release
+
+**Release Date:** November 5, 2025
+
+---
+
+## Summary of Changes
+
+This release represents a major security enhancement milestone for the mssqlMCP project. The primary focus has been on implementing comprehensive API key-based authorization, enhanced middleware security, and extensive test coverage. This release includes the successful merge of PR #19 from gdlcf88 which introduces API key-based authorization system.
+
+---
+
+## 🔐 Major Security Enhancements
+
+### Enhanced API Key Authorization System
+
+- **Three-Tier Authentication**: Master keys, Admin keys, and User keys with distinct permission levels
+- **Connection-Level Restrictions**: API keys can be restricted to specific database connections
+- **Encrypted Key Storage**: All user API keys are stored encrypted in SQLite database using AES-256
+- **Role-Based Access Control**: Different endpoints accessible based on key type and permissions
+
+### Comprehensive Authentication Middleware
+
+- **Multiple Auth Methods**: Support for both Bearer token and X-API-Key header authentication
+- **Case-Insensitive Handling**: Improved JSON property handling with case-insensitive matching
+- **Request Validation**: Enhanced validation of connection names and parameter restrictions
+- **Security Logging**: Comprehensive audit logging for all authentication attempts
+
+### JsonHelper Utility
+
+- **New JsonHelper Class**: Case-insensitive JSON property access utility
+- **Nested Property Support**: Support for accessing nested JSON properties safely
+- **Bug Fix**: Resolved API key authorization case sensitivity issues
+
+---
+
+## 🧪 Testing & Quality Improvements
+
+### Comprehensive Test Suite
+
+- **ApiKeyAuthMiddlewareTests**: Extensive unit tests covering all authentication scenarios
+- **Security Test Coverage**: Tests for user/admin/master key access patterns
+- **Connection Restriction Tests**: Validation of connection-level security controls
+- **Edge Case Testing**: Null values, malformed requests, and error conditions
+
+### Code Quality
+
+- **Enhanced Error Handling**: Better error messages and status codes
+- **Improved Validation**: Stronger input validation across all endpoints
+- **Documentation Updates**: Comprehensive documentation for new security features
+
+---
+
+## 🔧 Technical Improvements
+
+### Database Schema Updates
+
+- **AllowedConnectionNames Field**: Added support for connection restrictions in API key storage
+- **Backward Compatibility**: Existing installations automatically support new features
+- **Migration Support**: Seamless upgrade path for existing API keys
+
+### Development Environment
+
+- **JetBrains Rider Support**: Updated .gitignore with Rider-specific configurations
+- **MIT License**: Added proper licensing to the project
+- **Build Improvements**: Enhanced build configuration and dependency management
+
+---
+
+## 📚 Documentation Updates
+
+### Enhanced Documentation
+
+- **Security Documentation**: Comprehensive security setup and configuration guides
+- **API Examples**: Updated authentication examples in API_ENDPOINTS.md
+- **Migration Guide**: Step-by-step guide for upgrading existing installations
+- **Troubleshooting**: Enhanced troubleshooting documentation for security issues
+
+### New Documentation Files
+
+- **MERGE_UPDATE_NOVEMBER_2025.md**: Detailed analysis of security enhancements
+- **Updated tools_list.json**: Current tool definitions and capabilities
+
+---
+
+## 🚨 Breaking Changes
+
+### Authentication Now Required
+
+- **API Key Requirement**: All API requests now require authentication (unless specifically disabled)
+- **Environment Variables**: Must configure `MSSQL_MCP_API_KEY` and `MSSQL_MCP_KEY` for new installations
+- **Client Updates**: Client applications must include authentication headers
+
+### Endpoint Access Changes
+
+- **Management Endpoints**: Now require admin or master key access
+- **User Key Restrictions**: User keys have limited endpoint access compared to previous versions
+
+---
+
+## 🔄 Migration Instructions
+
+### For Existing Installations
+
+1. Set environment variables: `MSSQL_MCP_API_KEY` and `MSSQL_MCP_KEY`
+2. Update client applications with authentication headers
+3. Review and update API key permissions as needed
+
+### For New Installations
+
+1. Configure master key and encryption key
+2. Create user API keys through management endpoints
+3. Configure client authentication
+
+---
+
+## 🐛 Bug Fixes
+
+- **Case Sensitivity**: Fixed API key authentication case sensitivity issues
+- **JSON Parsing**: Improved JSON property handling in requests
+- **Connection Validation**: Enhanced connection name validation in middleware
+- **Error Handling**: Better error responses for authentication failures
+
+---
+
+## 📦 Dependencies & Compatibility
+
+- **.NET 9.0**: Continued support for .NET 9.0 framework
+- **Backward Compatibility**: Existing API endpoints remain functional
+- **Database Compatibility**: SQL Server 2019+ recommended for optimal performance
+
+---
+
+## 🙏 Contributors
+
+Special thanks to:
+
+- **gdlcf88**: Primary contributor for API key authorization system implementation
+- **7045kHz**: Project maintenance, documentation, and integration work
+
+---
+
+## 🔮 Looking Ahead
+
+### Planned for Future Releases
+
+- API key expiration dates and automatic rotation
+- Rate limiting per API key
+- Enhanced audit logging and monitoring
+- OAuth 2.0 integration options
+
+---
+
 ## Version 2.0.0 - Multi-Key API Release
 
 **Release Date:** June 29, 2025
