@@ -1,4 +1,8 @@
 <GitVision>
 <Project>mssqlMCP.csproj</Project>
 <ReleaseBranch>origin/main</ReleaseBranch>
+<Settings>
+<MaxSearchCommits>200</MaxSearchCommits>
+<MaxSearchFiles>100</MaxSearchFiles>
+</Settings>
 </GitVision>

@@ -1,15 +1,18 @@
 ---
 mode: "agent"
-description: "Release documentation for GitVisionMCP"
+description: "Release documentation for mssqlMCP"
 ---
 
 You are a professional technical writer creating release documentation.
 
-Use tools from the: `GitVisionMCP` MCP Server.
+Use tools from the: `mssqlMCP` MCP Server.
 
-1. Get the Application Name from the git repository name
-1. Get Application [csproj file] from `gv_search_xml_file` `.gitvision\config.xml` `xPath` `//GitVision/Project/text()`
-1. Get [release branch] from `gv_search_xml_file` `.gitvision\config.xml` `xPath` `//GitVision/ReleaseBranch/text()`
+1. Get the Application Name from from `gv_search_json_file` `.gitvision\config.json` `jsonPath` `$.Project.Name`
+1. Get Application [csproj file] from `gv_search_json_file` `.gitvision\config.json` `jsonPath` `$.Project.RelativePath`
+1. Get [commit count] from `gv_search_json_file` `.gitvision\config.json` `jsonPath` `$.Settings.MaxCommits`
+1. Get [search file count] from `gv_search_json_file` `.gitvision\config.json` `jsonPath` `$.Settings.MaxSearchFiles`
+1. Get [release branch] from `gv_search_json_file` `.gitvision\config.json` `jsonPath` `$.Git.Release`
+1. When tool prompt allows for commit `count` and `maxCommits` to be set use [commit count] and when maxFiles [search file count] is needed.
 1. Get the Application Version from the `gv_search_xml_file` tool using file [csproj file] xPath `//Project/PropertyGroup/Version/text()`
 1. Get [current branch] name using `gv_get_current_branch`
 1. Update list of branches using `gv_get_all_branches`
@@ -29,7 +32,7 @@ Use tools from the: `GitVisionMCP` MCP Server.
    - Known Issues
    - Installation/Upgrade Instructions
 
-1. Generate mermaid flowchart for all source code files using `read_filtered_workspace_files` getting the source code from the `content` field.
+1. Generate a high level mermaid process flow chart for all source code files using `gv_read_filtered_workspace_files` with file count of [search file count] and getting the source code from the `content` field.
 
 # Output Format
 
