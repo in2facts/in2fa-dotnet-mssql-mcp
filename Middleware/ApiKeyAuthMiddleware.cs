@@ -29,17 +29,15 @@ public class ApiKeyAuthMiddleware
         _apiKeyManager = apiKeyManager;
         _apiKeyRepository = apiKeyRepository;
         _masterKey = Environment.GetEnvironmentVariable("MSSQL_MCP_API_KEY") ??
-                     configuration["ApiSecurity:ApiKey"] ??
-                     "";
+            configuration["ApiSecurity:ApiKey"] ??
+            "";
     }
 
     private static readonly HashSet<string> UserAllowedApiNames = new()
     {
         "notifications/initialized", "tools/list",
-        "mssql_initialize_connection", "mssql_execute_query", "mssql_get_table_metadata",
-        "mssql_get_database_objects_metadata", "mssql_get_database_objects_by_type",
-        "mssql_get_agent_jobs", "mssql_get_agent_job_details", "mssql_get_ssis_catalog_info",
-        "mssql_get_azure_devops_info"
+        "Initialize", "ExecuteQuery", "GetTableMetadata", "GetDatabaseObjectsMetadata", "GetDatabaseObjectsByType",
+        "GetSqlServerAgentJobs", "GetSqlServerAgentJobDetails", "GetSsisCatalogInfo", "GetAzureDevOpsInfo"
     };
 
     public async Task InvokeAsync(HttpContext context)
@@ -47,8 +45,7 @@ public class ApiKeyAuthMiddleware
         // Skip auth check if API key is not configured and we have no API key manager
         if (string.IsNullOrEmpty(_masterKey) && _apiKeyManager == null)
         {
-            _logger.LogWarning(
-                "API key authentication is disabled. No API key configured and no API key manager available.");
+            _logger.LogWarning("API key authentication is disabled. No API key configured and no API key manager available.");
             await _next(context);
             return;
         }
@@ -95,8 +92,7 @@ public class ApiKeyAuthMiddleware
         {
             _logger.LogWarning("Invalid Authorization header format");
             context.Response.StatusCode = 401; // Unauthorized
-            await context.Response.WriteAsJsonAsync(new
-                { error = "Invalid Authorization format", message = authError });
+            await context.Response.WriteAsJsonAsync(new { error = "Invalid Authorization format", message = authError });
             return;
         }
 
@@ -104,12 +100,7 @@ public class ApiKeyAuthMiddleware
         {
             _logger.LogWarning("No authentication provided - checked Bearer token, X-API-Key, and JSON-RPC body.");
             context.Response.StatusCode = 401; // Unauthorized
-            await context.Response.WriteAsJsonAsync(new
-            {
-                error = "Authentication required",
-                message =
-                    "Please provide a valid API key in the Authorization header, X-API-Key header, or the request body for JSON-RPC calls."
-            });
+            await context.Response.WriteAsJsonAsync(new { error = "Authentication required", message = "Please provide a valid API key in the Authorization header, X-API-Key header, or the request body for JSON-RPC calls." });
             return;
         }
 
@@ -135,15 +126,9 @@ public class ApiKeyAuthMiddleware
                     if (!await IsUserToolRequest(context, requestBody) ||
                         !await IsConnectionAllowedAsync(context, requestBody, apiKey))
                     {
-                        _logger.LogWarning(
-                            "User key '{ApiKeyName}' ({ApiKeyId}) from {AuthSource} denied access to management endpoint",
-                            apiKey.Name, apiKey.Id, authSource);
+                        _logger.LogWarning("User key '{ApiKeyName}' ({ApiKeyId}) from {AuthSource} denied access to management endpoint", apiKey.Name, apiKey.Id, authSource);
                         context.Response.StatusCode = 403; // Forbidden
-                        await context.Response.WriteAsJsonAsync(new
-                        {
-                            error = "Permission Denied",
-                            message = "This API key does not have permission to perform management operations."
-                        });
+                        await context.Response.WriteAsJsonAsync(new { error = "Permission Denied", message = "This API key does not have permission to perform management operations." });
                         return;
                     }
                 }
@@ -158,8 +143,7 @@ public class ApiKeyAuthMiddleware
         // If we get here, the token was invalid
         _logger.LogWarning("Invalid authentication credentials provided from {AuthSource}", authSource);
         context.Response.StatusCode = 403; // Forbidden
-        await context.Response.WriteAsJsonAsync(new
-            { error = "Invalid authentication", message = "The provided authentication credentials are not valid" });
+        await context.Response.WriteAsJsonAsync(new { error = "Invalid authentication", message = "The provided authentication credentials are not valid" });
     }
 
     private async Task<bool> IsConnectionAllowedAsync(HttpContext context, string requestBody, ApiKey apiKey)
@@ -178,8 +162,7 @@ public class ApiKeyAuthMiddleware
 
         try
         {
-            var allowedConnections = JsonSerializer.Deserialize<List<string>>(apiKey.AllowedConnectionNames,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var allowedConnections = JsonSerializer.Deserialize<List<string>>(apiKey.AllowedConnectionNames, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (allowedConnections == null || allowedConnections.Count == 0)
             {
                 return true; // No restrictions
@@ -200,20 +183,13 @@ public class ApiKeyAuthMiddleware
             {
                 if (allowedConnections.Contains(connectionName, StringComparer.OrdinalIgnoreCase))
                 {
-                    _logger.LogInformation("Connection '{ConnectionName}' is allowed for API key '{ApiKeyName}'",
-                        connectionName, apiKey.Name);
+                    _logger.LogInformation("Connection '{ConnectionName}' is allowed for API key '{ApiKeyName}'", connectionName, apiKey.Name);
                     return true;
                 }
 
-                _logger.LogWarning(
-                    "Forbidden: API key '{ApiKeyName}' is not authorized for connection '{ConnectionName}'",
-                    apiKey.Name, connectionName);
+                _logger.LogWarning("Forbidden: API key '{ApiKeyName}' is not authorized for connection '{ConnectionName}'", apiKey.Name, connectionName);
                 context.Response.StatusCode = 403; // Forbidden
-                await context.Response.WriteAsJsonAsync(new
-                {
-                    error = "Forbidden",
-                    message = $"Access to connection '{connectionName}' is not allowed with the provided API key."
-                });
+                await context.Response.WriteAsJsonAsync(new { error = "Forbidden", message = $"Access to connection '{connectionName}' is not allowed with the provided API key." });
                 return false;
             }
 
@@ -225,8 +201,7 @@ public class ApiKeyAuthMiddleware
         {
             _logger.LogError(ex, "An unexpected error occurred during connection authorization");
             context.Response.StatusCode = 500;
-            await context.Response.WriteAsJsonAsync(new
-                { error = "Internal Server Error", message = "An error occurred while processing your request." });
+            await context.Response.WriteAsJsonAsync(new { error = "Internal Server Error", message = "An error occurred while processing your request." });
             return false;
         }
     }
@@ -261,8 +236,7 @@ public class ApiKeyAuthMiddleware
     private async Task<bool> IsUserToolRequest(HttpContext context, string requestBody)
     {
         // Only apply this logic to the MCP endpoint
-        if (!context.Request.Path.Equals("/mcp", StringComparison.OrdinalIgnoreCase) ||
-            context.Request.Method != "POST")
+        if (!context.Request.Path.Equals("/mcp", StringComparison.OrdinalIgnoreCase) || context.Request.Method != "POST")
         {
             return false;
         }
@@ -291,7 +265,7 @@ public class ApiKeyAuthMiddleware
 
                     // Check for user allowed APIs
                     if (UserAllowedApiNames.Any(prefix => apiName is not null &&
-                                                          apiName.Equals(prefix, StringComparison.OrdinalIgnoreCase)))
+                            apiName.Equals(prefix, StringComparison.OrdinalIgnoreCase)))
                     {
                         return true;
                     }
