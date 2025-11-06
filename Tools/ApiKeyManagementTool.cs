@@ -30,7 +30,7 @@ public class ApiKeyManagementTool
     /// </summary>
     /// <param name="request">API key creation details</param>
     /// <returns>The created API key with its value (shown only once)</returns>
-    [McpServerTool, Description("Create a new API key for a user")]
+    [McpServerTool(Name = "mssql_create_key"), Description("Create a new API key for a user")]
     public async Task<ApiKeyResponse> CreateApiKey(CreateApiKeyRequest request)
     {
         _logger.LogInformation($"Creating API key for user {request.UserId}");
@@ -50,7 +50,7 @@ public class ApiKeyManagementTool
     /// </summary>
     /// <param name="userId">The user ID whose keys to list</param>
     /// <returns>Collection of API keys for the user</returns>
-    [McpServerTool, Description("List API keys for a user")]
+    [McpServerTool(Name = "mssql_list_user_keys"), Description("List API keys for a user")]
     public async Task<IEnumerable<ApiKeyResponse>> ListUserApiKeys(string userId)
     {
         _logger.LogInformation($"Listing API keys for user {userId}");
@@ -70,7 +70,7 @@ public class ApiKeyManagementTool
     /// </summary>
     /// <param name="userId">The user ID whose keys to list</param>
     /// <returns>Collection of API keys for the user</returns>
-    [McpServerTool, Description("List API keys for a user")]
+    [McpServerTool(Name = "mssql_list_user_keys"), Description("List API keys for a user")]
     public async Task<IEnumerable<ApiKeyResponse>> ListApiKeys(string userId)
     {
         return await ListUserApiKeys(userId);
@@ -80,7 +80,7 @@ public class ApiKeyManagementTool
     /// List all API keys (admin only)
     /// </summary>
     /// <returns>Collection of all API keys in the system</returns>
-    [McpServerTool, Description("List all API keys (admin only)")]
+    [McpServerTool(Name = "mssql_list_all_keys"), Description("List all API keys (admin only)")]
     public async Task<IEnumerable<ApiKeyResponse>> ListAllApiKeys()
     {
         _logger.LogInformation("Listing all API keys");
@@ -100,7 +100,7 @@ public class ApiKeyManagementTool
     /// </summary>
     /// <param name="request">Request containing the ID of the key to revoke</param>
     /// <returns>Success status</returns>
-    [McpServerTool, Description("Revoke an API key")]
+    [McpServerTool(Name = "mssql_revoke_key"), Description("Revoke an API key")]
     public async Task<object> RevokeApiKey(RevokeApiKeyRequest request)
     {
         _logger.LogInformation($"Revoking API key {request.Id}");
@@ -121,7 +121,7 @@ public class ApiKeyManagementTool
     /// </summary>
     /// <param name="id">ID of the key to delete</param>
     /// <returns>Success status</returns>
-    [McpServerTool, Description("Delete an API key")]
+    [McpServerTool(Name = "mssql_delete_key"), Description("Delete an API key")]
     public async Task<object> DeleteApiKey(string id)
     {
         _logger.LogInformation($"Deleting API key {id}");
@@ -143,7 +143,7 @@ public class ApiKeyManagementTool
     /// <param name="apiKeyId">ID of the API key to get logs for</param>
     /// <param name="limit">Maximum number of logs to return</param>
     /// <returns>Collection of usage logs for the API key</returns>
-    [McpServerTool, Description("Get recent usage logs for a specific API key (admin only)")]
+    [McpServerTool(Name = "mssql_get_key_usage_logs"), Description("Get recent usage logs for a specific API key (admin only)")]
     public async Task<IEnumerable<ApiKeyUsageLog>> GetApiKeyUsageLogs(string apiKeyId, int limit = 100)
     {
         _logger.LogInformation($"Getting usage logs for API key {apiKeyId}");
@@ -164,7 +164,7 @@ public class ApiKeyManagementTool
     /// <param name="userId">ID of the user to get logs for</param>
     /// <param name="limit">Maximum number of logs to return</param>
     /// <returns>Collection of usage logs for the user</returns>
-    [McpServerTool, Description("Get recent usage logs for a user (admin only)")]
+    [McpServerTool(Name = "mssql_get_user_usage_logs"), Description("Get recent usage logs for a user (admin only)")]
     public async Task<IEnumerable<ApiKeyUsageLog>> GetUserUsageLogs(string userId, int limit = 100)
     {
         _logger.LogInformation($"Getting usage logs for user {userId}");

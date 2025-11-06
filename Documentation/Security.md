@@ -1,6 +1,93 @@
 # SQL Server MCP Security Features
 
-This document provides details about the security features implemented in the SQL Server MCP server.
+This document provides details about the comprehensive security features implemented in the SQL Server MCP server.
+
+## 🔐 API Key Authentication System (Updated November 2025)
+
+### Overview
+
+The mssqlMCP server implements a robust three-tier API key authentication system providing granular access control and enhanced security for database operations.
+
+### Authentication Tiers
+
+#### 1. Master API Key
+
+- **Source**: Environment variable `MSSQL_MCP_API_KEY` or configuration file
+- **Access Level**: Full system access including API key management
+- **Usage**: Administrative operations, initial setup, emergency access
+- **Security**: Should be restricted to administrative personnel only
+
+#### 2. Admin API Keys
+
+- **Storage**: Encrypted in SQLite database
+- **Access Level**: Management endpoints and full database access
+- **Capabilities**: Create/manage other API keys, access all database operations
+- **Usage**: Designated administrators and automated management systems
+
+#### 3. User API Keys
+
+- **Storage**: Encrypted in SQLite database with AES-256
+- **Access Level**: Limited to data access endpoints
+- **Restrictions**: Can be limited to specific database connections
+- **Usage**: Application access, end-user operations, restricted integrations
+
+### Authentication Methods
+
+The server supports multiple authentication header formats:
+
+```http
+# Bearer Token Format
+Authorization: Bearer <your-api-key>
+
+# X-API-Key Header Format
+X-API-Key: <your-api-key>
+```
+
+### Connection-Level Security
+
+User API keys can be restricted to specific database connections:
+
+```json
+{
+  "allowedConnectionNames": ["ProductionDB", "ReportingDB"]
+}
+```
+
+When restricted, the API key can only access the specified database connections, providing an additional layer of security.
+
+### Endpoint Access Control
+
+Different endpoints have different access requirements:
+
+#### Public Endpoints (All Key Types)
+
+- `tools/list`
+- `Initialize`
+- Basic database queries
+
+#### User Restricted Endpoints
+
+- `ExecuteQuery`
+- `GetTableMetadata`
+- `GetDatabaseObjectsMetadata`
+- Data retrieval operations
+
+#### Admin/Master Only Endpoints
+
+- `CreateApiKey`
+- `UpdateApiKey`
+- `DeleteApiKey`
+- API key management operations
+
+### Security Middleware
+
+The `ApiKeyAuthMiddleware` provides:
+
+- Request authentication validation
+- Role-based authorization checks
+- Connection restriction enforcement
+- Comprehensive security logging
+- Case-insensitive JSON handling
 
 ## Connection String Encryption
 
